@@ -72,6 +72,7 @@ def _get_kwargs(
 
 
 def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> {{return_type}}:
+  try:
     {% for response in endpoint.responses.patterns %}
     {% set code_range = response.status_code.range %}
     {% if code_range[0] == code_range[1] %}
@@ -81,6 +82,10 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
     {% endif %}
         {{ parse_response(parsed_responses, response) | indent(8) }}
     {% endfor %}
+  except Exception as e:
+    raise errors.UnableToParseResponse(e, response) from e
+
+  if True:
     {% if endpoint.responses.default %}
     {{ parse_response(parsed_responses, endpoint.responses.default) | indent(4) }}
     {% else %}
